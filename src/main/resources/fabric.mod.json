@@ -1,0 +1,33 @@
+{
+	"schemaVersion": 1,
+	"id": "ergu_monster_backpack",
+	"version": "${version}",
+	"name": "Ergu's Monster Backpack",
+	"description": "王二咕的怪物背包 —— 功能设计中,详见 DESIGN.md。",
+	"authors": [
+		"王二咕 (Ergu)"
+	],
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.ergu.monsterbackpack.ErguMonsterBackpack"
+		],
+		"client": [
+			"com.ergu.monsterbackpack.client.ErguMonsterBackpackClient"
+		]
+	},
+	"mixins": [
+		"ergu_monster_backpack.mixins.json",
+		{
+			"config": "ergu_monster_backpack.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
