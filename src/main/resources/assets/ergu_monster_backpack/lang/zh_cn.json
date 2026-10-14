@@ -1,1 +1,36 @@
-{}
+{
+  "item.ergu_monster_backpack.monster_backpack": "怪物背包",
+  "item.ergu_monster_backpack.monster_backpack.prototype": "原型背包",
+  "item.ergu_monster_backpack.monster_backpack.creative": "怪物背包(完全体 · 测试用)",
+  "item.ergu_monster_backpack.ritual_dagger": "仪式匕首",
+  "block.ergu_monster_backpack.monster_backpack": "怪物背包",
+
+  "itemGroup.ergu_monster_backpack.main": "王二咕的怪物背包",
+
+  "container.ergu_monster_backpack.backpack": "怪物背包",
+  "key.ergu_monster_backpack.open_backpack": "打开怪物背包",
+  "gui.ergu_monster_backpack.progress": "怪物背包 · 已长开 %s / %s 格",
+
+  "gui.ergu_monster_backpack.tab.feed": "喂食",
+  "gui.ergu_monster_backpack.tab.charm": "挂饰",
+  "gui.ergu_monster_backpack.tab.stomach": "胃",
+  "gui.ergu_monster_backpack.tab.void": "虚空",
+
+  "gui.ergu_monster_backpack.tab.feed.short": "喂食",
+  "gui.ergu_monster_backpack.tab.charm.short": "挂饰",
+  "gui.ergu_monster_backpack.tab.stomach.short": "胃",
+  "gui.ergu_monster_backpack.tab.void.short": "虚空",
+
+  "gui.ergu_monster_backpack.tab.feed.hint": "→ 放食物喂它",
+  "gui.ergu_monster_backpack.tab.charm.hint": "→ 插挂饰,两个有组合",
+  "gui.ergu_monster_backpack.tab.stomach.hint": "→ 烧粗矿成锭",
+  "gui.ergu_monster_backpack.tab.void.hint": "→ 过滤掉杂物",
+
+  "gui.ergu_monster_backpack.charm.locked": "未解锁",
+
+  "ritual.ergu_monster_backpack.awakened": "它醒了。",
+  "ritual.ergu_monster_backpack.dormant": "它还没有醒。",
+  "ritual.ergu_monster_backpack.wake.already_awake": "它已经醒着。",
+  "ritual.ergu_monster_backpack.wake.too_weak": "……它闻到了血。可你太虚了。",
+  "ritual.ergu_monster_backpack.wake.no_prey": "它好像在等什么。附近却什么也没有。"
+}

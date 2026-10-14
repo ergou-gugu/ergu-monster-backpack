@@ -1,1 +1,24 @@
-{}
+{
+  "item.ergu_monster_backpack.monster_backpack": "Monster Backpack",
+  "item.ergu_monster_backpack.monster_backpack.prototype": "Prototype Backpack",
+  "item.ergu_monster_backpack.ritual_dagger": "Ritual Dagger",
+  "block.ergu_monster_backpack.monster_backpack": "Monster Backpack",
+
+  "itemGroup.ergu_monster_backpack.main": "Ergu's Monster Backpack",
+
+  "container.ergu_monster_backpack.backpack": "Monster Backpack",
+  "key.ergu_monster_backpack.open_backpack": "Open Monster Backpack",
+  "gui.ergu_monster_backpack.progress": "Monster Backpack · %s / %s slots grown",
+
+  "gui.ergu_monster_backpack.tab.feed": "Feed",
+  "gui.ergu_monster_backpack.tab.charm": "Charms",
+  "gui.ergu_monster_backpack.tab.stomach": "Stomach",
+  "gui.ergu_monster_backpack.tab.void": "Void",
+  "gui.ergu_monster_backpack.tab.feed.hint": "Put food in to feed it",
+
+  "ritual.ergu_monster_backpack.awakened": "It has awakened.",
+  "ritual.ergu_monster_backpack.dormant": "It is not awake yet.",
+  "ritual.ergu_monster_backpack.wake.already_awake": "It is already awake.",
+  "ritual.ergu_monster_backpack.wake.too_weak": "...it smells blood. But you are too weak.",
+  "ritual.ergu_monster_backpack.wake.no_prey": "It seems to be waiting. There is nothing nearby."
+}
