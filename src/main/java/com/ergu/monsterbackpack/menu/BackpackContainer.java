@@ -93,6 +93,34 @@ public class BackpackContainer implements Container {
 	}
 
 	/**
+	 * ⚠️⚠️ <b>强制下次访问时重读组件。</b>
+	 *
+	 * <h2>为什么需要它,以及为什么"对象身份"不够</h2>
+	 * {@link #syncFromStack()} 判断"要不要重读"用的是<b>对象身份</b> ——
+	 * 这在"服务端同步过来 ⇒ 换了新对象"那条路上是够的(那也是它本来的目的)。
+	 *
+	 * <p>但<b>服务端自己改组件的时候,对象【不会换】</b>:
+	 * <pre>
+	 *   backpack.set(DataComponents.CONTAINER, ...);   // 同一个 ItemStack 对象
+	 * </pre>
+	 * ⇒ {@code current == cachedStack} 恒为真 ⇒ <b>容器永远不重读</b>。
+	 *
+	 * <h2>本工程踩点(2026-10-15,前后踩了两次)</h2>
+	 * <ul>
+	 *   <li>{@code VoidContainer} —— 登记虚空样本后,格子里看不到东西</li>
+	 *   <li>{@code BackpackContainer} —— <b>虚空把背包里的东西销毁了,但界面上还画着</b>;
+	 *       玩家的描述是"<b>放进去物品后背包内的对应物品会失去显示(左键能拿到但是不显示)</b>"</li>
+	 * </ul>
+	 * 两次是同一个根因。⇒ <b>凡是"绕过容器直接改组件"的地方,都要回来调一次这个方法。</b>
+	 *
+	 * <p>⚠️ 置 {@code null} 是安全的:下一次 {@code current == cachedStack} 必然为假
+	 * ({@code stackGetter} 至少返回 {@code ItemStack.EMPTY},不会是 null)。
+	 */
+	public void invalidate() {
+		this.cachedStack = null;
+	}
+
+	/**
 	 * 把当前内容写回物品组件。
 	 *
 	 * <p>两端都写:<b>服务端</b>写的是真身;<b>客户端</b>写的是本地副本,

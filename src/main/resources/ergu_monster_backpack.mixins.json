@@ -2,7 +2,9 @@
 	"required": true,
 	"package": "com.ergu.monsterbackpack.mixin",
 	"compatibilityLevel": "JAVA_25",
-	"mixins": [],
+	"mixins": [
+		"ItemEntityPickupMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	},

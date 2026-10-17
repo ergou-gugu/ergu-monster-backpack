@@ -109,6 +109,9 @@ public class CharmContainer implements Container {
 	@Override
 	public void setChanged() {
 		this.flush();
+		// 🆕 挂饰变了 → 重算属性加成(幸运符这类)。
+		// ⚠️ 只有这里(事件驱动),绝不在每 tick 的地方调 —— 见工作区约定坑 20。
+		com.ergu.monsterbackpack.charm.CharmEffects.recalculate(this.backpack());
 	}
 
 	@Override

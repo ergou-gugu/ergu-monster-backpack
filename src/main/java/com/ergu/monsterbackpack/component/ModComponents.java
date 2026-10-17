@@ -78,6 +78,56 @@ public final class ModComponents {
 	public static final DataComponentType<Integer> STAGE = intComponent("stage");
 
 	/**
+	 * 「胃」里正在消化的那一份(1 格,见 DESIGN.md §十二 F16)。
+	 *
+	 * <p>只放<b>粗铜 / 粗铁 / 粗金</b>,烧成锭之后<b>产物直接进背包</b> ——
+	 * 所以这个组件里永远最多只有一样东西。
+	 *
+	 * <p>⚠️ 存在组件里而不是菜单的临时容器里,是为了<b>关掉界面它也继续消化</b>
+	 * (和背包内容同样的道理,坑 19)。
+	 */
+	public static final DataComponentType<net.minecraft.world.item.component.ItemContainerContents> STOMACH =
+		Registry.register(
+			BuiltInRegistries.DATA_COMPONENT_TYPE,
+			ErguMonsterBackpack.id("stomach"),
+			DataComponentType.<net.minecraft.world.item.component.ItemContainerContents>builder()
+				.persistent(net.minecraft.world.item.component.ItemContainerContents.CODEC)
+				.networkSynchronized(net.minecraft.world.item.component.ItemContainerContents.STREAM_CODEC)
+				.ignoreSwapAnimation()
+				.build()
+		);
+
+	/**
+	 * 「胃」开始消化那一份东西的游戏时间戳;{@code -1} = 还没开始。
+	 *
+	 * <p>和 {@code unlock_start} 一个套路:<b>存起点,不存进度</b> ——
+	 * 进度由"现在 - 起点"现算,少一个要同步的字段。
+	 */
+	public static final DataComponentType<Integer> STOMACH_START = intComponent("stomach_start");
+
+	/**
+	 * 🆕 「护主」的**保护冷却**起点(游戏时间戳);{@code -1} = 没在冷却。
+	 *
+	 * <h2>⚠️ 它存的是"什么时候触发过",不是"还剩多久"</h2>
+	 * 和 {@link #STOMACH_START} 一个套路 —— **存起点,不存剩余量**。
+	 * "现在还在不在冷却"由 `now - start < 冷却时长` 现算。
+	 *
+	 * <p>好处:少一个每 tick 要改的字段(⚠️ 每 tick 写组件会让手持物品隐形,见坑 20)。
+	 *
+	 * <h2>⚠️ 为什么放在【背包组件】上,而不是玩家身上</h2>
+	 * 「护主」是**背包自身的能力**(技能树解锁的),所以冷却也该跟着**这个背包**走 ——
+	 * 换一个背包就是"另一个它",冷却不该继承。
+	 *
+	 * <p>⚠️ **⚠️ 但这也意味着:玩家可以【换个背包】来绕过冷却。**
+	 * 这是已知的、**当前接受**的漏洞 —— 因为:
+	 * <ul>
+	 *   <li>冷却是**每个背包各自 3 分钟**(DESIGN.md §十二 F1 定的就是"它缓一缓",不是"你不能死")</li>
+	 *   <li>玩家要绕过它得**多养一个开了护主的背包** —— 成本远大于收益</li>
+	 * </ul>
+	 */
+	public static final DataComponentType<Integer> GUARDIAN_COOLDOWN = intComponent("guardian_cooldown");
+
+	/**
 	 * 挂饰槽里的两个挂饰(见 DESIGN.md §八)。
 	 *
 	 * <p>容量固定 2,用 {@code ItemContainerContents} 装 —— 和背包内容同样的存法,
@@ -96,6 +146,65 @@ public final class ModComponents {
 				.ignoreSwapAnimation()
 				.build()
 		);
+
+	/**
+	 * 虚空的<b>样本槽白名单</b>(见 DESIGN.md §十二 F17)。
+	 *
+	 * <h2>玩法</h2>
+	 * <pre>
+	 * 玩家丢一个【圆石】进样本槽
+	 * → 之后拾取到的所有圆石,进背包后立刻被销毁
+	 * </pre>
+	 * <b>零配置 UI</b>、所见即所得 —— 就是普通槽位,拖进去即可。
+	 *
+	 * <h2>⚠️ 为什么容量固定 {@link #VOID_FILTER_SIZE} 而不是按等级变</h2>
+	 * 组件是持久化数据,<b>容量一变就得迁移存档</b>。
+	 * 所以这里**一次性给足 27 格**,I 级只是<b>只暴露前 9 个</b> ——
+	 * 升到 II 级时<span>不需要动组件</span>,只是界面多显示 18 格。
+	 *
+	 * <p>这和多页签"加列能扩容量"是同一个思路:**把可变的东西放在读取端,不放存储端**。
+	 */
+	public static final DataComponentType<net.minecraft.world.item.component.ItemContainerContents> VOID_FILTER =
+		Registry.register(
+			BuiltInRegistries.DATA_COMPONENT_TYPE,
+			ErguMonsterBackpack.id("void_filter"),
+			DataComponentType.<net.minecraft.world.item.component.ItemContainerContents>builder()
+				.persistent(net.minecraft.world.item.component.ItemContainerContents.CODEC)
+				.networkSynchronized(net.minecraft.world.item.component.ItemContainerContents.STREAM_CODEC)
+				.ignoreSwapAnimation()
+				.build()
+		);
+
+	/**
+	 * 样本槽的物理容量。<b>= 25,正好是 II 级的 5×5</b>。
+	 *
+	 * <p>⚠️ 一次给足,等级只改<b>解锁几个 + 排成几列</b> ——
+	 * 容量一变就得迁移存档,所以物理容量按最高等级定。
+	 */
+	public static final int VOID_FILTER_SIZE = 25;
+
+	/** 虚空 I 级:3×3 = 9 格(和精妙普通虚空 / 旅行者虚空的默认值一致)。 */
+	public static final int VOID_FILTER_TIER1 = 9;
+
+	/** 虚空 II 级:5×5 = 25 格。 */
+	public static final int VOID_FILTER_TIER2 = 25;
+
+	/** I 级的列数。 */
+	public static final int VOID_COLS_TIER1 = 3;
+
+	/** II 级的列数。 */
+	public static final int VOID_COLS_TIER2 = 5;
+
+	/** 虚空开关(关掉之后样本槽留着,但不再销毁任何东西)。 */
+	public static final DataComponentType<Boolean> VOID_ENABLED = Registry.register(
+		BuiltInRegistries.DATA_COMPONENT_TYPE,
+		ErguMonsterBackpack.id("void_enabled"),
+		DataComponentType.<Boolean>builder()
+			.persistent(Codec.BOOL)
+			.networkSynchronized(ByteBufCodecs.BOOL)
+			.ignoreSwapAnimation()
+			.build()
+	);
 
 	/**
 	 * 整数组件的统一工厂。
@@ -118,6 +227,54 @@ public final class ModComponents {
 
 	private ModComponents() {
 	}
+
+	/**
+	 * 🆕 技能树各节点的等级 —— **键 = 节点 id**(如 {@code "voiding_1"}),**值 = 等级**。
+	 *
+	 * <p>缺省(没有这个组件 / 表里没有这个键)= <b>未解锁</b>。
+	 * 节点 id 与完整清单见 {@code skill/SkillNodes} 与 {@code DESIGN.md} §六。
+	 *
+	 * <h2>⚠️ 为什么是 {@code Map} 而不是 {@code List}</h2>
+	 * 用索引的话,**往树里插一个新节点就会让它后面所有节点的等级串位** ——
+	 * 而技能树必然会增删节点(超大堆叠还没做完,终局能力也待定)。
+	 * 用 id 当键就完全没有这个问题。
+	 *
+	 * <h2>⚠️ 两个 Codec 的细节</h2>
+	 * <ul>
+	 *   <li>{@code persistent} 用 {@link Codec#unboundedMap} —— 存档里是正常的
+	 *       {@code {"voiding_1": 1}} 形式,人也能读。</li>
+	 *   <li>{@code networkSynchronized} 用 {@link ByteBufCodecs#map} ——
+	 *       ⚠️ <b>必须给 maxSize</b>:它内部是 {@code writeCount(size, maxSize)},
+	 *       不设上限就是 {@code Integer.MAX_VALUE},等于让对端随便声称多大。
+	 *       我们用 {@link #MAX_SKILL_NODES}(节点总数 + 余量),正常永远够。</li>
+	 * </ul>
+	 *
+	 * <p>⚠️ 同样必须 {@code .ignoreSwapAnimation()} —— 理由见类注释(坑 20)。
+	 */
+	/**
+	 * {@link #SKILLS} 的网络同步上限。
+	 *
+	 * <p>⚠️ 它<b>不是</b>"最多能有多少节点"的业务约束,只是<b>防对端撒谎的哨兵</b> ——
+	 * 正常存档里键数远小于它(键只在真正解锁时才出现)。
+	 *
+	 * <p>⚠️ 声明在 {@link #SKILLS} <b>之前</b> —— 虽然它是编译期常量、会内联,
+	 * 但"用到的常量写在前面"读起来才是对的。
+	 */
+	public static final int MAX_SKILL_NODES = 64;
+
+	public static final DataComponentType<java.util.Map<String, Integer>> SKILLS = Registry.register(
+		BuiltInRegistries.DATA_COMPONENT_TYPE,
+		ErguMonsterBackpack.id("skills"),
+		DataComponentType.<java.util.Map<String, Integer>>builder()
+			.persistent(Codec.unboundedMap(Codec.STRING, Codec.INT))
+			.networkSynchronized(ByteBufCodecs.map(
+				java.util.HashMap::new,
+				ByteBufCodecs.STRING_UTF8,
+				ByteBufCodecs.VAR_INT,
+				MAX_SKILL_NODES))
+			.ignoreSwapAnimation()
+			.build()
+	);
 
 	/** 空方法,唯一作用是触发本类的静态初始化;注册写在静态字段上。 */
 	public static void bootstrap() {

@@ -14,6 +14,10 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 
+	// ⚠️ 必要:26.2 里 Slot.x/y 是 final,而我们需要"把槽位挪出屏幕来隐藏"
+	// (成熟 mod 的标准做法,见 accesswidener 里的说明)。
+	accessWidenerPath = file("src/main/resources/ergu_monster_backpack.accesswidener")
+
 	mods {
 		"ergu_monster_backpack" {
 			sourceSet sourceSets.main

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "BRB",
+    " S "
+  ],
+  "key": {
+    "S": "minecraft:string",
+    "B": "minecraft:bone",
+    "R": "minecraft:rotten_flesh"
+  },
+  "result": {
+    "id": "ergu_monster_backpack:monster_backpack"
+  }
+}

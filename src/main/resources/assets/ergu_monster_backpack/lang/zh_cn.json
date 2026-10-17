@@ -3,6 +3,8 @@
   "item.ergu_monster_backpack.monster_backpack.prototype": "原型背包",
   "item.ergu_monster_backpack.monster_backpack.creative": "怪物背包(完全体 · 测试用)",
   "item.ergu_monster_backpack.ritual_dagger": "仪式匕首",
+  "item.ergu_monster_backpack.luck_charm": "幸运符",
+  "item.ergu_monster_backpack.magnet": "磁石",
   "block.ergu_monster_backpack.monster_backpack": "怪物背包",
 
   "itemGroup.ergu_monster_backpack.main": "王二咕的怪物背包",
@@ -12,25 +14,83 @@
   "gui.ergu_monster_backpack.progress": "怪物背包 · 已长开 %s / %s 格",
 
   "gui.ergu_monster_backpack.tab.feed": "喂食",
+  "gui.ergu_monster_backpack.tab.gizzard": "砂囊",
   "gui.ergu_monster_backpack.tab.charm": "挂饰",
-  "gui.ergu_monster_backpack.tab.stomach": "胃",
   "gui.ergu_monster_backpack.tab.void": "虚空",
 
   "gui.ergu_monster_backpack.tab.feed.short": "喂食",
+  "gui.ergu_monster_backpack.tab.gizzard.short": "砂囊",
   "gui.ergu_monster_backpack.tab.charm.short": "挂饰",
-  "gui.ergu_monster_backpack.tab.stomach.short": "胃",
   "gui.ergu_monster_backpack.tab.void.short": "虚空",
 
   "gui.ergu_monster_backpack.tab.feed.hint": "→ 放食物喂它",
+  "gui.ergu_monster_backpack.tab.gizzard.hint": "→ 吞粗矿,磨成锭",
   "gui.ergu_monster_backpack.tab.charm.hint": "→ 插挂饰,两个有组合",
-  "gui.ergu_monster_backpack.tab.stomach.hint": "→ 烧粗矿成锭",
   "gui.ergu_monster_backpack.tab.void.hint": "→ 过滤掉杂物",
 
+  "gui.ergu_monster_backpack.tab.gizzard.progress": "还要 %s 秒",
+  "gui.ergu_monster_backpack.tab.gizzard.empty": "放粗矿进去",
+
+  "gui.ergu_monster_backpack.tab.void.title": "虚空过滤",
+  "gui.ergu_monster_backpack.tab.void.tip1": "鼠标拿着东西点格子,",
+  "gui.ergu_monster_backpack.tab.void.tip2": "登记它;空手点=清除",
+  "gui.ergu_monster_backpack.tab.void.locked": "去「成长」页解锁它",
+
+  "gui.ergu_monster_backpack.void.on": "虚空 · 开",
+  "gui.ergu_monster_backpack.void.off": "虚空 · 关",
+
   "gui.ergu_monster_backpack.charm.locked": "未解锁",
+
+  "gui.ergu_monster_backpack.auto_collect": "自动收纳",
+  "gui.ergu_monster_backpack.auto_collect.on": "开",
+  "gui.ergu_monster_backpack.auto_collect.off": "关",
+  "gui.ergu_monster_backpack.sort": "整理",
+  "gui.ergu_monster_backpack.sort.button": "整理",
+
+  "gui.ergu_monster_backpack.tooltip.summary": "内有 %s 件 · 已长开 %s 格",
+  "gui.ergu_monster_backpack.tooltip.empty": "空空如也",
+  "gui.ergu_monster_backpack.tooltip.hint": "按住 Ctrl 看内容",
 
   "ritual.ergu_monster_backpack.awakened": "它醒了。",
   "ritual.ergu_monster_backpack.dormant": "它还没有醒。",
   "ritual.ergu_monster_backpack.wake.already_awake": "它已经醒着。",
   "ritual.ergu_monster_backpack.wake.too_weak": "……它闻到了血。可你太虚了。",
-  "ritual.ergu_monster_backpack.wake.no_prey": "它好像在等什么。附近却什么也没有。"
+  "ritual.ergu_monster_backpack.wake.no_prey": "它好像在等什么。附近却什么也没有。",
+
+  "guardian.ergu_monster_backpack.saved": "它替你扛住了。",
+  "guardian.ergu_monster_backpack.cooldown": "它还没缓过来……(%s 秒)",
+
+  "gui.ergu_monster_backpack.page.backpack": "背包",
+  "gui.ergu_monster_backpack.page.growth": "成长",
+
+  "gui.ergu_monster_backpack.branch.guardian": "守卫",
+  "gui.ergu_monster_backpack.branch.storage": "收纳",
+  "gui.ergu_monster_backpack.branch.instinct": "本能",
+
+  "gui.ergu_monster_backpack.skill.done": "已经会了",
+  "gui.ergu_monster_backpack.skill.stage": "要到阶段 %s 才醒",
+  "gui.ergu_monster_backpack.skill.auto": "到时候自己就会",
+  "gui.ergu_monster_backpack.skill.click": "点一下教它",
+  "gui.ergu_monster_backpack.skill.prereq": "得先教它「%s」",
+  "gui.ergu_monster_backpack.skill.drag": "按住拖动 · 滚轮上下",
+
+  "gui.ergu_monster_backpack.skill.guardian_1": "护主 I",
+  "gui.ergu_monster_backpack.skill.guardian_2": "护主 II",
+  "gui.ergu_monster_backpack.skill.guardian_3": "护主 III",
+  "gui.ergu_monster_backpack.skill.danger_sense": "危险感知",
+  "gui.ergu_monster_backpack.skill.endgame": "???",
+
+  "gui.ergu_monster_backpack.skill.voiding_1": "虚空过滤 I",
+  "gui.ergu_monster_backpack.skill.voiding_2": "虚空过滤 II",
+  "gui.ergu_monster_backpack.skill.sorting": "一键整理",
+
+  "gui.ergu_monster_backpack.skill.auto_eat": "自己找吃的",
+  "gui.ergu_monster_backpack.skill.feed_player": "喂你吃",
+  "gui.ergu_monster_backpack.skill.big_list": "记性更好",
+  "gui.ergu_monster_backpack.skill.gizzard_1": "砂囊 I",
+  "gui.ergu_monster_backpack.skill.gizzard_2": "砂囊 II",
+  "gui.ergu_monster_backpack.skill.gizzard_3": "砂囊 III",
+  "gui.ergu_monster_backpack.skill.charm_slot_1": "多一个挂饰位",
+  "gui.ergu_monster_backpack.skill.charm_slot_2": "再多一个挂饰位",
+  "gui.ergu_monster_backpack.skill.charm_combo": "挂饰共鸣"
 }

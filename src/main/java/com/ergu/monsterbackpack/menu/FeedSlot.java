@@ -20,13 +20,16 @@ import com.ergu.monsterbackpack.growth.BackpackGrowth;
  * 而 {@code set(...)}(同步路径)不能碰 —— 碰了会让客户端回写同步数据时被误吃
  * (工作区约定坑 23 的同一个道理:两条写入路径性质不同)。
  */
-public class FeedSlot extends Slot {
+public class FeedSlot extends Slot implements SideTabSlot {
 
 	/** 从这里实时取背包物品 —— 不缓存引用(坑 22)。 */
 	private final java.util.function.Supplier<ItemStack> backpackGetter;
 
-	/** 这个槽现在活不活 —— 由菜单的侧签状态决定。 */
-	private final java.util.function.BooleanSupplier active;
+	/** 属于哪个侧签。 */
+	private final int tabId;
+
+	/** 它"正常"时的 x —— 因为 {@code slot.x} 会被挪去 {@code HIDDEN_SLOT_X},得留一份原值。 */
+	private final int homeX;
 
 	public FeedSlot(
 		final net.minecraft.world.Container container,
@@ -34,17 +37,22 @@ public class FeedSlot extends Slot {
 		final int x,
 		final int y,
 		final java.util.function.Supplier<ItemStack> backpackGetter,
-		final java.util.function.BooleanSupplier active
+		final int tabId
 	) {
 		super(container, slot, x, y);
 		this.backpackGetter = backpackGetter;
-		this.active = active;
+		this.tabId = tabId;
+		this.homeX = x;
 	}
 
-	/** 侧签没打开时,这个格子是关的。 */
 	@Override
-	public boolean isActive() {
-		return this.active.getAsBoolean();
+	public int tabId() {
+		return this.tabId;
+	}
+
+	@Override
+	public int homeX() {
+		return this.homeX;
 	}
 
 	/**

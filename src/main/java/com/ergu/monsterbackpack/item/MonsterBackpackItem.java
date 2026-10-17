@@ -39,6 +39,43 @@ public class MonsterBackpackItem extends BlockItem {
 	}
 
 	/**
+	 * 名字<b>跟着状态走</b>:没醒的显示「原型背包」,醒了才是「怪物背包」。
+	 *
+	 * <h2>为什么不写 {@code CUSTOM_NAME}</h2>
+	 * 早先的做法是给原型态塞一个 {@code CUSTOM_NAME = "原型背包"},
+	 * 结果**唤醒之后名字还留着** —— 玩家看到"已经醒了却还叫原型背包"(实测反馈过)。
+	 *
+	 * <p>改成这里动态算:状态就在 {@code unlocked_slots} 里,
+	 * <b>唤醒那一刻名字自动变回去</b>,不需要任何"清理"代码,
+	 * 而且玩家自己用铁砧改的名也不会被弄丢。
+	 */
+	@Override
+	public Component getName(final ItemStack stack) {
+		if (stack.getOrDefault(ModComponents.UNLOCKED_SLOTS, 0) <= 0) {
+			return Component.translatable(
+				"item.ergu_monster_backpack.monster_backpack.prototype");
+		}
+		return super.getName(stack);
+	}
+
+	/**
+	 * 背包自己的 tooltip —— <b>接管</b>原版自动塞"内含物品"的行为。
+	 *
+	 * <p>⚠️ {@code ItemContainerContents} 自己实现了 {@code TooltipProvider},
+	 * 只要物品有 {@code CONTAINER} 就会自动往 tooltip 里塞内容(工作区约定坑 17)。
+	 * 那样我们<b>没法控制</b>"按住 Ctrl 才展开"这件事,而 84 格全展开会盖满整个屏幕。
+	 *
+	 * <p>所以走<b>自己实现这个钩子</b>这条路(旅行者背包的选择),
+	 * 渲染交给客户端的 {@code ClientBackpackTooltipComponent}。
+	 */
+	@Override
+	public java.util.Optional<net.minecraft.world.inventory.tooltip.TooltipComponent> getTooltipImage(
+		final ItemStack stack
+	) {
+		return java.util.Optional.of(BackpackTooltipComponent.of(stack));
+	}
+
+	/**
 	 * 背包<b>不能放进任何容器</b> —— 潜影盒、收纳袋、箱子,以及另一个背包。
 	 *
 	 * <p>原版就靠这一个钩子管控全部这些路径

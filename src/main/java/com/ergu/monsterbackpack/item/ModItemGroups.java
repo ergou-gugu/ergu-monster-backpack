@@ -42,16 +42,33 @@ public final class ModItemGroups {
 			.title(Component.translatable("itemGroup.ergu_monster_backpack.main"))
 			.icon(() -> new ItemStack(ModItems.MONSTER_BACKPACK))
 			.displayItems((parameters, output) -> {
-				// 初始背包 = 已经醒过来的(3 格,阶段 1)
+				// 初始背包 = 已经醒过来的(3 格)—— 想跳过仪式的人直接用这个
+				output.accept(awakenedBackpack());
+				// 原型背包 = 没醒的(0 格)= 【物品的默认】—— 也正是合成出来的那一个
 				output.accept(ModItems.MONSTER_BACKPACK);
-				// 原型背包 = 还没醒的(0 格),给它做仪式用
-				output.accept(prototypeBackpack());
 				// 🆕 完全体 = 84 格全开 + 阶段 4(开发期用来直接验证后段功能)
 				output.accept(fullyGrownBackpack());
 				output.accept(ModItems.RITUAL_DAGGER);
+				// 🆕 挂饰(暂时无合成,先放创造栏验证效果)
+				output.accept(ModCharmItems.LUCK_CHARM);
+				output.accept(ModCharmItems.MAGNET);
 			})
 			.build()
 	);
+
+	/**
+	 * 初始背包 —— 已经醒过来的(3 格)。
+	 *
+	 * <p>物品的<b>默认</b>是原型态(0 格,见 {@code ModItems});所以"醒着的"要单独造一个。
+	 */
+	private static ItemStack awakenedBackpack() {
+		final ItemStack stack = new ItemStack(ModItems.MONSTER_BACKPACK);
+		stack.set(ModComponents.UNLOCKED_SLOTS, ModItems.AWAKENED_SLOTS);
+		stack.set(ModComponents.UNLOCK_START, -1);
+		stack.set(ModComponents.STAGE, 1);
+		stack.set(ModComponents.SATIETY, BackpackGrowth.MAX_SATIETY);
+		return stack;
+	}
 
 	/**
 	 * 「完全体」背包 —— 开发期用来<b>直接验证后段功能</b>(挂饰槽、高阶段的东西),
@@ -69,24 +86,6 @@ public final class ModItemGroups {
 		stack.set(ModComponents.SATIETY, BackpackGrowth.MAX_SATIETY);
 		stack.set(DataComponents.CUSTOM_NAME,
 			Component.translatable("item.ergu_monster_backpack.monster_backpack.creative"));
-		return stack;
-	}
-
-	/**
-	 * 原型背包 —— <b>同一个物品</b>,只是 {@code unlocked_slots = 0}。
-	 *
-	 * <p>这是"一个物品表达两种状态"的直接体现(见 DESIGN.md §六):
-	 * 不做两个物品、两套资源,只让 `0` 这个特殊值表示"还没醒"。
-	 * 加个自定义名字只是为了在创造栏里能一眼分清。
-	 */
-	private static ItemStack prototypeBackpack() {
-		final ItemStack stack = new ItemStack(ModItems.MONSTER_BACKPACK);
-		stack.set(ModComponents.UNLOCKED_SLOTS, 0);
-		stack.set(ModComponents.UNLOCK_START, -1);
-		stack.set(ModComponents.STAGE, 1);
-		stack.set(ModComponents.SATIETY, 0);
-		stack.set(DataComponents.CUSTOM_NAME,
-			Component.translatable("item.ergu_monster_backpack.monster_backpack.prototype"));
 		return stack;
 	}
 

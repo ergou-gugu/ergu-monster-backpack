@@ -24,6 +24,22 @@ public class ErguMonsterBackpackClient implements ClientModInitializer {
 
 		ModKeyMappings.register();
 
+		registerTooltipComponent();
+
 		ErguMonsterBackpack.LOGGER.info("Ergu's Monster Backpack client initialized.");
+	}
+
+	/**
+	 * 把背包的 tooltip 数据组件接到渲染组件上。
+	 *
+	 * <p><b>双端配对</b>:数据在 {@code BackpackTooltipComponent}(src/main),
+	 * 渲染在 {@code ClientBackpackTooltipComponent}(src/client)——
+	 * 这里是把两者连起来的地方。缺这一句的表现是 tooltip 里什么都不显示。
+	 */
+	private static void registerTooltipComponent() {
+		net.fabricmc.fabric.api.client.rendering.v1.ClientTooltipComponentCallback.EVENT.register(
+			data -> data instanceof com.ergu.monsterbackpack.item.BackpackTooltipComponent backpack
+				? new ClientBackpackTooltipComponent(backpack)
+				: null);
 	}
 }

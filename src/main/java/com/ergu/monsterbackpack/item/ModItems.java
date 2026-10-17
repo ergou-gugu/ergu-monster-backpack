@@ -5,8 +5,11 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.equipment.Equippable;
 
@@ -37,6 +40,27 @@ public final class ModItems {
 		Registries.ITEM,
 		ErguMonsterBackpack.id("ritual_dagger")
 	);
+
+	/**
+	 * 🆕 背包"打不烂"的伤害类型标签(见 DESIGN.md §五)。
+	 *
+	 * <p>内容见 `data/ergu_monster_backpack/tags/damage_type/backpack_indestructible.json`:
+	 * <pre>
+	 *   #minecraft:is_fire        ← 火 / 熔岩 / 岩浆块 / 火焰弹
+	 *   #minecraft:is_explosion   ← 爆炸(含床 / 重生锚 / 烟花)
+	 *   minecraft:cactus          ← 仙人掌
+	 * </pre>
+	 *
+	 * <p>⚠️ **它防不住"掉虚空"** —— 那不是伤害,是 {@code Entity} 掉到 {@code y < minY} 被删。
+	 * 那条归「护主」处理(用户 2026-10-15 定),**不要往这个标签里加**。
+	 *
+	 * <p>⚠️ **声明位置在 {@link #MONSTER_BACKPACK} 【之前】** ——
+	 * 虽然 {@code delayedComponent} 的求值本来就是延迟的(不会真的读到 null),
+	 * 但把"依赖的东西"写在"用它的东西"**之前**可以省掉一次怀疑。
+	 */
+	public static final TagKey<DamageType> INDESTRUCTIBLE = TagKey.create(
+		Registries.DAMAGE_TYPE,
+		ErguMonsterBackpack.id("backpack_indestructible"));
 
 	public static final Item MONSTER_BACKPACK = Registry.register(
 		BuiltInRegistries.ITEM,
@@ -70,24 +94,36 @@ public final class ModItems {
 			// 本 mod 的界面里已经能看内容了,这里藏掉(坑 17)
 			.component(DataComponents.TOOLTIP_DISPLAY,
 				TooltipDisplay.DEFAULT.withHidden(DataComponents.CONTAINER, true))
-			// ⚠️ V0.1 临时:创造栏直接给【初始背包】= 3 格。
-			// 正式流程是「原型背包(unlocked_slots = 0)→ 唤醒仪式 → 3 格」,
-			// 唤醒仪式安排在 V0.2,所以现在先给一个已唤醒的。
-			.component(ModComponents.UNLOCKED_SLOTS, V0_1_STARTING_SLOTS)
+			// ⚠️ 默认 = 【原型态】(0 格,还没醒)。
+			//
+			// 这是刻意的:配方合成出来的就是物品的默认组件 —— 而"合成出来的原型背包"
+			// 本来就该是【没醒的】,要靠唤醒仪式才会变成 3 格。
+			// 创造栏里的"初始背包"是单独设了 3 的(见 ModItemGroups)。
+			.component(ModComponents.UNLOCKED_SLOTS, 0)
 			.component(ModComponents.UNLOCK_START, -1)
-			// 饱食度:初始给满,让玩家一上来能长一会儿(设计见 §六 的 F15)
-			.component(ModComponents.SATIETY, BackpackGrowth.MAX_SATIETY)
+			.component(ModComponents.SATIETY, 0)
 			// 阶段:独立存的(⚠️ 不从格数算 —— 每行格子数会变,见 ModComponents.STAGE)
-			.component(ModComponents.STAGE, 1);
+			.component(ModComponents.STAGE, 1)
+			// 🆕 护主的保护冷却:存"上次触发是游戏时间几点",-1 = 没在冷却(§十二 F1)
+			.component(ModComponents.GUARDIAN_COOLDOWN, -1)
+			// 🆕 天生不会被销毁 —— 火 / 熔岩 / 岩浆块 / 爆炸 / 仙人掌(见 DESIGN.md §五)
+			//
+			// ⚠️ 用户 2026-10-15 的要求:"误操作后挫败感太强"。
+			// 判据:【不可逆的损失】做成基础属性,【可逆的】(死亡散落)才做成技能树能力。
+			//
+			// ⚠️ 必须用 delayedComponent —— 标签要等注册表冻结后才能查(坑 11)。
+			// 这正是原版 `Item.Properties.fireResistant()`(Item.java:425)的写法,
+			// 只是把 `is_fire` 换成了我们自己的标签(多包了爆炸和仙人掌)。
+			.delayedComponent(DataComponents.DAMAGE_RESISTANT,
+				ctx -> new DamageResistant(ctx.getOrThrow(INDESTRUCTIBLE)));
 	}
 
 	/**
-	 * V0.1 创造栏给出的初始格数。
+	 * 唤醒成功后送出的格数(见 DESIGN.md §六)。
 	 *
-	 * <p>按 DESIGN.md §六:唤醒成功后 {@code unlocked_slots: 0 → 3}
-	 * (第 0 行的前 3 格是"出生"白送的)。
+	 * <p>第 0 行的前 3 格是"出生"白送的,所以 {@code unlocked_slots: 0 → 3}。
 	 */
-	private static final int V0_1_STARTING_SLOTS = 3;
+	public static final int AWAKENED_SLOTS = 3;
 
 	private ModItems() {
 	}

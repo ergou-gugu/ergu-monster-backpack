@@ -25,11 +25,26 @@ import com.ergu.monsterbackpack.growth.GrowthRules;
  * 任何物品都能插(效果由挂饰自己决定,见 §八)。所以这里<b>不限制</b> {@code mayPlace} ——
  * 以后加了真正的挂饰物品,也不需要改这个类。
  */
-public class CharmSlot extends Slot {
+public class CharmSlot extends Slot implements SideTabSlot {
 
-	private final BooleanSupplier tabOpen;
-	/** 当前阶段 —— <b>从菜单的同步通道取</b>(独立存的组件,不从格数算)。 */
-	private final java.util.function.IntSupplier stageGetter;
+	/** 属于哪个侧签。 */
+	private final int tabId;
+	/** 它"正常"时的 x(因为 {@code slot.x} 会被挪去隐藏位)。 */
+	private final int homeX;
+	/**
+	 * 这个槽解锁了没 —— **由菜单提供,读技能树节点**(`charm_slot_1` / `charm_slot_2`)。
+	 *
+	 * <p>入参是**槽索引**(0 / 1),返回该槽解锁没。
+	 *
+	 * <h2>⚠️ 2026-10-15:从 "阶段 ≥ N" 换成技能树节点</h2>
+	 * 以前这里是 {@code IntSupplier stageGetter},判断 {@code stage >= slotIndex + 2} ——
+	 * 也就是"槽 0 要阶段 2、槽 1 要阶段 3"。
+	 *
+	 * <p>那和虚空的 {@code stage >= 3} 是同一类占位:
+	 * **阶段是"它长了多久",而挂饰槽是"玩家花材料解锁的能力"** —— 两者不该绑定。
+	 * (§六 早就把这两个节点标成「🔹 到时自动解锁」,现在真的接上了。)
+	 */
+	private final java.util.function.IntPredicate unlockGetter;
 	/** 这是第几个槽(0 起)。 */
 	private final int slotIndex;
 
@@ -38,27 +53,43 @@ public class CharmSlot extends Slot {
 		final int index,
 		final int x,
 		final int y,
-		final java.util.function.IntSupplier stageGetter,
-		final BooleanSupplier tabOpen
+		final java.util.function.IntPredicate unlockGetter,
+		final int tabId
 	) {
 		super(container, index, x, y);
-		this.stageGetter = stageGetter;
-		this.tabOpen = tabOpen;
+		this.unlockGetter = unlockGetter;
+		this.tabId = tabId;
+		this.homeX = x;
 		this.slotIndex = index;
 	}
 
-	/** 这个槽本身解锁了没(阶段够不够)。 */
-	public boolean isUnlocked() {
-		// ⚠️ 阶段是【独立存的组件】,不从格数算 —— 每行格子数会变(见 ModComponents.STAGE)
-		final int stage = this.stageGetter.getAsInt();
-
-		// 槽 0 要阶段 2,槽 1 要阶段 3
-		return stage >= this.slotIndex + 2;
+	@Override
+	public int tabId() {
+		return this.tabId;
 	}
 
 	@Override
+	public int homeX() {
+		return this.homeX;
+	}
+
+	/** 这个槽本身解锁了没(对应的技能树节点解锁了吗)。 */
+	public boolean isUnlocked() {
+		// ⚠️ 用 slotIndex 而不是 index —— 后者会被 addSlot 覆盖成【菜单全局】索引(坑 31)。
+		// 这里 slotIndex 是构造时自己存的那个(0 / 1),不受影响。
+		return this.unlockGetter.test(this.slotIndex);
+	}
+
+	/**
+	 * 现在能用吗 —— <b>只看"这个槽解锁了没"</b>。
+	 *
+	 * <p>⚠️ "它那个签开没开"<b>不在这里管</b> —— 那由坐标决定
+	 * (签没开时整个槽被挪到 {@link BackpackMenu#HIDDEN_SLOT_X},见 {@link SideTabSlot})。
+	 * 分成两件事以后,就不存在"签关了但槽还在原位"的隐患。
+	 */
+	@Override
 	public boolean isActive() {
-		return this.tabOpen.getAsBoolean() && this.isUnlocked();
+		return this.isUnlocked();
 	}
 
 	@Override

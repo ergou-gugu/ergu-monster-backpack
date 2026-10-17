@@ -1,7 +1,10 @@
 {
   "item.ergu_monster_backpack.monster_backpack": "Monster Backpack",
   "item.ergu_monster_backpack.monster_backpack.prototype": "Prototype Backpack",
+  "item.ergu_monster_backpack.monster_backpack.creative": "Monster Backpack (Complete · Test)",
   "item.ergu_monster_backpack.ritual_dagger": "Ritual Dagger",
+  "item.ergu_monster_backpack.luck_charm": "Lucky Charm",
+  "item.ergu_monster_backpack.magnet": "Magnet",
   "block.ergu_monster_backpack.monster_backpack": "Monster Backpack",
 
   "itemGroup.ergu_monster_backpack.main": "Ergu's Monster Backpack",
@@ -12,13 +15,82 @@
 
   "gui.ergu_monster_backpack.tab.feed": "Feed",
   "gui.ergu_monster_backpack.tab.charm": "Charms",
-  "gui.ergu_monster_backpack.tab.stomach": "Stomach",
+  "gui.ergu_monster_backpack.tab.gizzard": "Gizzard",
   "gui.ergu_monster_backpack.tab.void": "Void",
-  "gui.ergu_monster_backpack.tab.feed.hint": "Put food in to feed it",
+
+  "gui.ergu_monster_backpack.tab.feed.short": "Feed",
+  "gui.ergu_monster_backpack.tab.charm.short": "Charm",
+  "gui.ergu_monster_backpack.tab.gizzard.short": "Gizzard",
+  "gui.ergu_monster_backpack.tab.void.short": "Void",
+
+  "gui.ergu_monster_backpack.tab.feed.hint": "-> Put food in to feed it",
+  "gui.ergu_monster_backpack.tab.charm.hint": "-> Insert charms, pairs combine",
+  "gui.ergu_monster_backpack.tab.gizzard.hint": "-> Swallow raw ore, grind to ingots",
+  "gui.ergu_monster_backpack.tab.void.hint": "-> Filter out junk",
+
+  "gui.ergu_monster_backpack.tab.gizzard.progress": "%s s left",
+  "gui.ergu_monster_backpack.tab.gizzard.empty": "Put raw ore in",
+
+  "gui.ergu_monster_backpack.tab.void.title": "Void Filter",
+  "gui.ergu_monster_backpack.tab.void.tip1": "Click to tag it",
+  "gui.ergu_monster_backpack.tab.void.tip2": "empty hand clears",
+  "gui.ergu_monster_backpack.tab.void.locked": "Unlock it on Growth",
+
+  "gui.ergu_monster_backpack.void.on": "Void · ON",
+  "gui.ergu_monster_backpack.void.off": "Void · OFF",
+
+  "gui.ergu_monster_backpack.charm.locked": "Locked",
+
+  "gui.ergu_monster_backpack.auto_collect": "Auto-collect",
+  "gui.ergu_monster_backpack.auto_collect.on": "ON",
+  "gui.ergu_monster_backpack.auto_collect.off": "OFF",
+  "gui.ergu_monster_backpack.sort": "Sort",
+  "gui.ergu_monster_backpack.sort.button": "Sort",
+
+  "gui.ergu_monster_backpack.tooltip.summary": "%s items · %s slots grown",
+  "gui.ergu_monster_backpack.tooltip.empty": "Empty",
+  "gui.ergu_monster_backpack.tooltip.hint": "Hold Ctrl to view contents",
 
   "ritual.ergu_monster_backpack.awakened": "It has awakened.",
   "ritual.ergu_monster_backpack.dormant": "It is not awake yet.",
   "ritual.ergu_monster_backpack.wake.already_awake": "It is already awake.",
   "ritual.ergu_monster_backpack.wake.too_weak": "...it smells blood. But you are too weak.",
-  "ritual.ergu_monster_backpack.wake.no_prey": "It seems to be waiting. There is nothing nearby."
+  "ritual.ergu_monster_backpack.wake.no_prey": "It seems to be waiting. There is nothing nearby.",
+
+  "guardian.ergu_monster_backpack.saved": "It took the blow for you.",
+  "guardian.ergu_monster_backpack.cooldown": "It has not recovered yet... (%ss)",
+
+  "gui.ergu_monster_backpack.page.backpack": "Bag",
+  "gui.ergu_monster_backpack.page.growth": "Growth",
+
+  "gui.ergu_monster_backpack.branch.guardian": "Guardian",
+  "gui.ergu_monster_backpack.branch.storage": "Storage",
+  "gui.ergu_monster_backpack.branch.instinct": "Instinct",
+
+  "gui.ergu_monster_backpack.skill.done": "Already learned",
+  "gui.ergu_monster_backpack.skill.stage": "Wakes at stage %s",
+  "gui.ergu_monster_backpack.skill.auto": "It will learn this on its own",
+  "gui.ergu_monster_backpack.skill.click": "Click to teach it",
+  "gui.ergu_monster_backpack.skill.prereq": "Teach it \"%s\" first",
+  "gui.ergu_monster_backpack.skill.drag": "Drag to pan · scroll to move",
+
+  "gui.ergu_monster_backpack.skill.guardian_1": "Warding I",
+  "gui.ergu_monster_backpack.skill.guardian_2": "Warding II",
+  "gui.ergu_monster_backpack.skill.guardian_3": "Warding III",
+  "gui.ergu_monster_backpack.skill.danger_sense": "Danger Sense",
+  "gui.ergu_monster_backpack.skill.endgame": "???",
+
+  "gui.ergu_monster_backpack.skill.voiding_1": "Void Filter I",
+  "gui.ergu_monster_backpack.skill.voiding_2": "Void Filter II",
+  "gui.ergu_monster_backpack.skill.sorting": "Sorting",
+
+  "gui.ergu_monster_backpack.skill.auto_eat": "Forages",
+  "gui.ergu_monster_backpack.skill.feed_player": "Feeds You",
+  "gui.ergu_monster_backpack.skill.big_list": "Better Memory",
+  "gui.ergu_monster_backpack.skill.gizzard_1": "Gizzard I",
+  "gui.ergu_monster_backpack.skill.gizzard_2": "Gizzard II",
+  "gui.ergu_monster_backpack.skill.gizzard_3": "Gizzard III",
+  "gui.ergu_monster_backpack.skill.charm_slot_1": "Extra Charm Slot",
+  "gui.ergu_monster_backpack.skill.charm_slot_2": "Another Charm Slot",
+  "gui.ergu_monster_backpack.skill.charm_combo": "Charm Resonance"
 }

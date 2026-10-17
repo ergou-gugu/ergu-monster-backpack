@@ -1,0 +1,17 @@
+accessWidener	v1	official
+
+# ⚠️ 为什么需要这一条
+#
+# 26.2 里 `Slot.x` / `Slot.y` 是 `public final int` —— 槽位坐标【不可改】。
+# 但"把槽位挪出屏幕来隐藏"是成熟 mod 的标准做法:
+#   · 旅行者背包: slot.y = -1000
+#   · 精妙背包:   slot.x = -2000
+# 两家都通过访问加宽把这两个字段变成可写(旅行者的 accesswidener 里就是这两行)。
+#
+# 我们的左侧签需要同一件事:签没打开时把功能槽挪到 HIDDEN_SLOT_X。
+# 这比用 `Slot.isActive()` 表达"隐藏"更安全 ——
+# 坐标出屏后连原版自己的命中判定都失效,不存在"看不见但能点到"的陷阱。
+#
+# 参考:D:\MC\refs\背包界面研究报告.md §3 与 §7
+mutable field net/minecraft/world/inventory/Slot x I
+mutable field net/minecraft/world/inventory/Slot y I

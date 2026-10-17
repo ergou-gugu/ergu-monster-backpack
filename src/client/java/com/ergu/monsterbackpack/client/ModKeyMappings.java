@@ -37,6 +37,17 @@ public final class ModKeyMappings {
 		)
 	);
 
+	// ⚠️ 一键整理【没有快捷键】—— 它是界面上的按钮(2026-10-15 改)。
+	//
+	// 原定 `R` 键(照 `inventorysorter` 的习惯),但用户实测「按 R 没反应」之后
+	// 决定改成界面按钮。按钮更好:
+	//   · 不用记键、不会和别的 mod 冲突
+	//   · **状态可见** —— 没解锁时能画成灰的,玩家知道"这里有东西但还不能用"
+	//   · 快捷键的"没反应"没法区分"没解锁"和"按键冲突",排查成本高
+	//
+	// 📌 **教训**:给功能配快捷键之前先问一句"玩家怎么知道它什么时候可用?"
+	// 纯快捷键 + 有解锁条件 = **按了没反应,而且不知道为什么**。
+
 	private ModKeyMappings() {
 	}
 
@@ -53,6 +64,7 @@ public final class ModKeyMappings {
 					ClientPlayNetworking.send(new OpenBackpackPayload());
 				}
 			}
+
 		});
 	}
 

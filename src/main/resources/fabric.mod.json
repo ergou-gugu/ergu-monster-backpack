@@ -9,6 +9,7 @@
 	],
 	"license": "MIT",
 	"environment": "*",
+	"accessWidener": "ergu_monster_backpack.accesswidener",
 	"entrypoints": {
 		"main": [
 			"com.ergu.monsterbackpack.ErguMonsterBackpack"

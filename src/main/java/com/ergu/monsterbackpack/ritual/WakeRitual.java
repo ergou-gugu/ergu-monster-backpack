@@ -124,7 +124,9 @@ public final class WakeRitual {
 		// ---- 唤醒 ----
 		backpack.set(ModComponents.UNLOCKED_SLOTS, STARTING_SLOTS);
 		backpack.set(ModComponents.UNLOCK_START, -1);
-		clearPrototypeName(backpack);
+		// ⚠️ 名字不用管 —— 它由 unlocked_slots 动态算(见 MonsterBackpackItem.getName)
+		// 早先是"给原型态塞 CUSTOM_NAME,唤醒时再摘掉",结果漏摘过一次
+		//(玩家看到"已经醒了却还叫原型背包")。改成动态算就没这个隐患了。
 
 		if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
 			// ⚠️ 带 overlay 的那个重载只有 ServerPlayer 有
@@ -133,27 +135,6 @@ public final class WakeRitual {
 		}
 
 		return InteractionResult.SUCCESS;
-	}
-
-	/**
-	 * 醒过来的背包不该再挂着「原型背包」这个名字。
-	 *
-	 * <p>那个名字是<b>创造栏为了区分两个格子</b>临时加的(见 {@code ModItemGroups}),
-	 * 不是物品的正式名称 —— 唤醒后必须摘掉,否则玩家会看到
-	 * "已经醒了却还叫原型背包"这种自相矛盾的东西。
-	 *
-	 * <p>⚠️ 只摘<b>我们自己设的那一个</b>:以后玩家用铁砧给背包起的名,
-	 * 不能因为做了个仪式就被抹掉。
-	 */
-	private static void clearPrototypeName(final ItemStack backpack) {
-		final Component name = backpack.get(DataComponents.CUSTOM_NAME);
-		if (name == null) {
-			return;
-		}
-		if (name.equals(Component.translatable(
-			"item.ergu_monster_backpack.monster_backpack.prototype"))) {
-			backpack.remove(DataComponents.CUSTOM_NAME);
-		}
 	}
 
 	/**

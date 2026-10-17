@@ -1,0 +1,7 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "ergu_monster_backpack:item/magnet"
+  },
+  "hand_animation_on_swap": false
+}
