@@ -53,6 +53,7 @@
 
   "ritual.ergu_monster_backpack.awakened": "It has awakened.",
   "ritual.ergu_monster_backpack.dormant": "It is not awake yet.",
+  "gui.ergu_monster_backpack.error.backpack_gone": "The backpack is gone.",
   "ritual.ergu_monster_backpack.wake.already_awake": "It is already awake.",
   "ritual.ergu_monster_backpack.wake.too_weak": "...it smells blood. But you are too weak.",
   "ritual.ergu_monster_backpack.wake.no_prey": "It seems to be waiting. There is nothing nearby.",

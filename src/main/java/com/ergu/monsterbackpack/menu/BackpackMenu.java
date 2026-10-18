@@ -1,6 +1,8 @@
 package com.ergu.monsterbackpack.menu;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -10,9 +12,11 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 
 import com.ergu.monsterbackpack.block.entity.MonsterBackpackBlockEntity;
 import com.ergu.monsterbackpack.component.ModComponents;
+import com.ergu.monsterbackpack.item.ModItems;
 
 /**
  * 背包界面(物品形态 + 方块形态共用一个)的容器。
@@ -659,6 +663,11 @@ public class BackpackMenu extends AbstractContainerMenu {
 				// 其余三项:客户端把服务端同步来的值写回【自己那份】物品,
 				// 这样界面照旧从物品读就行,不必为方块形态写两套逻辑。
 				final ItemStack backpack = BackpackMenu.this.currentBackpack();
+				// ⚠️ 拿不到真背包时【绝不写】—— 这条通道是客户端写本地物品的,
+				// 写进 ItemStack.EMPTY 就是污染全局空栈(背包已经不在了的场合)。
+				if (backpack.isEmpty()) {
+					return;
+				}
 				switch (index) {
 					case DATA_UNLOCKED -> backpack.set(ModComponents.UNLOCKED_SLOTS, value);
 					case DATA_SATIETY -> backpack.set(ModComponents.SATIETY, value);
@@ -928,7 +937,11 @@ public class BackpackMenu extends AbstractContainerMenu {
 			return;
 		}
 
-		final ItemStack backpack = this.currentBackpack();
+		final ItemStack backpack = this.requireBackpack();
+		if (backpack.isEmpty()) {
+			return;
+		}
+
 		final int stage = backpack.getOrDefault(ModComponents.STAGE, 1);
 
 		com.ergu.monsterbackpack.skill.SkillUnlock.unlock(
@@ -968,7 +981,7 @@ public class BackpackMenu extends AbstractContainerMenu {
 	 * (和 {@code tryUnlockSkill} 里"重算一切"是同一个原则)。
 	 */
 	public void sortBackpack() {
-		final ItemStack backpack = this.currentBackpack();
+		final ItemStack backpack = this.requireBackpack();
 
 		if (backpack.isEmpty()) {
 			return;
@@ -994,6 +1007,10 @@ public class BackpackMenu extends AbstractContainerMenu {
 	 */
 	public void syncAutomaticSkills() {
 		final ItemStack backpack = this.currentBackpack();
+		// ⚠️ 空栈不能写(客户端那条路上背包可能还没同步到)
+		if (backpack.isEmpty()) {
+			return;
+		}
 		final int stage = backpack.getOrDefault(ModComponents.STAGE, 1);
 		com.ergu.monsterbackpack.skill.SkillUnlock.syncAutomatic(stage, backpack);
 	}
@@ -1081,14 +1098,22 @@ public class BackpackMenu extends AbstractContainerMenu {
 	 * <p>⚠️ 它<b>只失效缓存,不改数据</b> —— 调多了无害(最多多读一次组件)。
 	 */
 	public void invalidateBackpackCache() {
+		// ⚠️ 四个容器都要失效。以前只失效了内容容器,
+		// 于是"砂囊/挂饰/虚空 被绕过容器改过"的那几处照旧画着旧内容 ——
+		// 砂囊那个还会让产物看起来没产生、让人重复放粗矿(被当成复制)。
 		this.container.invalidate();
+		this.stomachContainer.invalidate();
+		this.charmContainer.invalidate();
+		this.voidContainer.invalidate();
 	}
 
 	/**
-	 * 现在那个背包物品。
+	 * 现在那个背包物品 —— <b>并且保证它真的是背包</b>。
 	 *
-	 * <p>两端各自解析:物品形态从玩家身上取,方块形态从方块实体取。
-	 * 客户端那边方块实体虽然不同步内容,但格数已由 {@link #state} 补上。
+	 * <p>⚠️⚠️ 取不到时必须返回 {@link ItemStack#EMPTY},<b>不能把"别的物品"交出去</b>:
+	 * 后面所有写操作都是 {@code stack.set(组件, ...)} ——
+	 * 写在 {@code ItemStack.EMPTY} 上等于<b>污染全局空栈</b>(原版空栈是共享的单例),
+	 * 写在别的物品上等于把它悄悄变成"隐藏容器"。两种都会让玩家的东西人间蒸发。
 	 */
 	private ItemStack currentBackpack() {
 		if (this.openData.isBlock()) {
@@ -1102,15 +1127,48 @@ public class BackpackMenu extends AbstractContainerMenu {
 		return resolveFromPlayer(this.playerInventory.player, this.openData.source());
 	}
 
-	/** 按位置在玩家身上找背包(物品形态)。 */
+	/**
+	 * 🆕 写操作专用入口 —— 拿不到背包就<b>当场收摊,并告诉玩家</b>。
+	 *
+	 * <h2>为什么不能只靠 {@link #currentBackpack()} 返回空栈</h2>
+	 * 返回空栈本身不会崩,但调用方大多没检查 —— 背包已经不在身上(被挖掉 / 被炸 /
+	 * 按 Q 丢出去 / 数字键换格)时,玩家仍然能点解锁、开虚空、开收纳:
+	 * <b>材料照扣,能力写进虚空</b>。所以这里直接把界面关掉。
+	 */
+	private ItemStack requireBackpack() {
+		final ItemStack backpack = this.currentBackpack();
+
+		if (!backpack.isEmpty()) {
+			return backpack;
+		}
+
+		if (this.playerInventory.player instanceof ServerPlayer serverPlayer) {
+			serverPlayer.sendSystemMessage(
+				Component.translatable("gui.ergu_monster_backpack.error.backpack_gone"), true);
+			serverPlayer.closeContainer();
+		}
+		return ItemStack.EMPTY;
+	}
+
+	/** 这一份物品是不是怪物背包。 */
+	public static boolean isBackpackStack(final ItemStack stack) {
+		return !stack.isEmpty() && stack.getItem() == ModItems.MONSTER_BACKPACK;
+	}
+
+	/**
+	 * 按位置在玩家身上找背包(物品形态)。<b>不是背包就返回空栈。</b>
+	 *
+	 * <p>⚠️ 这里必须过滤:格子里那件东西是会被玩家换掉的
+	 * (数字键 SWAP 只在背包界面里被拦,别的界面 / Q 丢弃 / F 换手都拦不住全部路径)。
+	 */
 	public static ItemStack resolveFromPlayer(final Player player, final int source) {
-		if (source == BackpackOpenData.SOURCE_CHEST) {
-			return player.getItemBySlot(EquipmentSlot.CHEST);
-		}
-		if (source == BackpackOpenData.SOURCE_MAIN_HAND) {
-			return player.getMainHandItem();
-		}
-		return player.getInventory().getItem(source);
+		final ItemStack found = switch (source) {
+			case BackpackOpenData.SOURCE_CHEST -> player.getItemBySlot(EquipmentSlot.CHEST);
+			case BackpackOpenData.SOURCE_MAIN_HAND -> player.getMainHandItem();
+			case BackpackOpenData.SOURCE_OFF_HAND -> player.getOffhandItem();
+			default -> player.getInventory().getItem(source);
+		};
+		return isBackpackStack(found) ? found : ItemStack.EMPTY;
 	}
 
 	/** 老的调用名,留着免得别处引用要改。 */
@@ -1186,6 +1244,10 @@ public class BackpackMenu extends AbstractContainerMenu {
 			// 兜底:万一有人还按"主手"开界面,就锁打开时选中的那一格
 			return inventory.getSelectedSlot();
 		}
+		if (source == BackpackOpenData.SOURCE_OFF_HAND) {
+			// 副手不在这个界面里显示,也就没有可锁的格子
+			return -1;
+		}
 		// 其余就是物品栏索引本身
 		return source >= 0 && source < inventory.getContainerSize() ? source : -1;
 	}
@@ -1237,7 +1299,10 @@ public class BackpackMenu extends AbstractContainerMenu {
 	 * 「磁石」只负责扩大吸取范围(用户 2026-10-15 的拆分)。
 	 */
 	public void toggleAutoCollect() {
-		final ItemStack backpack = this.currentBackpack();
+		final ItemStack backpack = this.requireBackpack();
+		if (backpack.isEmpty()) {
+			return;
+		}
 		final boolean now = backpack.getOrDefault(
 			com.ergu.monsterbackpack.charm.CharmComponents.AUTO_COLLECT, true);
 
@@ -1256,7 +1321,11 @@ public class BackpackMenu extends AbstractContainerMenu {
 	 * 关掉之后玩家配好的白名单留着,下次打开接着用。
 	 */
 	public void toggleVoid() {
-		final ItemStack backpack = this.currentBackpack();
+		final ItemStack backpack = this.requireBackpack();
+		if (backpack.isEmpty()) {
+			return;
+		}
+
 		final boolean now = backpack.getOrDefault(ModComponents.VOID_ENABLED, Boolean.FALSE);
 
 		backpack.set(ModComponents.VOID_ENABLED, !now);
@@ -1298,7 +1367,11 @@ public class BackpackMenu extends AbstractContainerMenu {
 			return;
 		}
 
-		final ItemStack backpack = this.currentBackpack();
+		final ItemStack backpack = this.requireBackpack();
+		if (backpack.isEmpty()) {
+			return;
+		}
+
 		final ItemStack held = this.getCarried();
 
 		// 现解成一份列表 —— 组件不可变,改完要整个写回(和另外几个容器一个套路)
@@ -1419,9 +1492,33 @@ public class BackpackMenu extends AbstractContainerMenu {
 		super.clicked(slotIndex, buttonNum, input, player);
 	}
 
+	/**
+	 * 界面还有效吗 —— <b>⚠️ 不能恒 {@code true}</b>。
+	 *
+	 * <h2>为什么必须真判</h2>
+	 * 方块被挖掉 / 被苦力怕炸掉、物品被 Q 丢出去或换了格之后,菜单以前<b>照样开着</b>,
+	 * 于是所有写操作都落在 {@code ItemStack.EMPTY} 上(<b>污染全局空栈</b>),
+	 * 玩家放的 84 格东西静默蒸发。
+	 *
+	 * <p>原版每 tick 都会问一次这个方法(服务端判定后自动关界面),
+	 * 所以这里是"背包不在了 ⇒ 界面自己关"的最省事一道闸,不必到处写检查。
+	 */
 	@Override
 	public boolean stillValid(final Player player) {
-		return true;
+		if (!player.isAlive()) {
+			return false;
+		}
+
+		if (this.openData.isBlock()) {
+			if (!(player.level().getBlockEntity(this.openData.pos())
+					instanceof MonsterBackpackBlockEntity)) {
+				return false;
+			}
+			// 8 格内 —— 与箱子同一个量级,够玩家走动,又不至于隔着半张地图开着
+			return player.distanceToSqr(Vec3.atCenterOf(this.openData.pos())) <= 64.0;
+		}
+
+		return isBackpackStack(resolveFromPlayer(player, this.openData.source()));
 	}
 
 	// ⚠️ 刻意【不覆写】removed():

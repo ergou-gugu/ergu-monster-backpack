@@ -53,6 +53,7 @@
 
   "ritual.ergu_monster_backpack.awakened": "它醒了。",
   "ritual.ergu_monster_backpack.dormant": "它还没有醒。",
+  "gui.ergu_monster_backpack.error.backpack_gone": "背包已经不在了。",
   "ritual.ergu_monster_backpack.wake.already_awake": "它已经醒着。",
   "ritual.ergu_monster_backpack.wake.too_weak": "……它闻到了血。可你太虚了。",
   "ritual.ergu_monster_backpack.wake.no_prey": "它好像在等什么。附近却什么也没有。",

@@ -103,7 +103,7 @@ public class MonsterBackpackItem extends BlockItem {
 			return InteractionResult.FAIL;
 		}
 
-		openBackpack(level, player);
+		openBackpack(level, player, hand);
 		return InteractionResult.SUCCESS;
 	}
 
@@ -120,10 +120,23 @@ public class MonsterBackpackItem extends BlockItem {
 			final InteractionResult result = super.useOn(context);
 
 			if (result.consumesAction()) {
-				// 放置成功后,把背包数据(内容 / 格数 / 计时)搬进新的方块实体
-				final BlockPos placed = context.getClickedPos().relative(context.getClickedFace());
-				if (context.getLevel().getBlockEntity(placed) instanceof MonsterBackpackBlockEntity backpack) {
-					backpack.setBackpack(source);
+				// ⚠️⚠️ 只在【物品真的被消耗】时才搬数据。
+				//
+				// 创造模式 super.useOn 不扣物品(ItemStack.shrink 在 hasInfiniteMaterials 时跳过),
+				// 这时若还搬数据,就等于【凭空复制一份带内容的背包】。
+				// 物品还在 ⇒ 视为"没消耗" ⇒ 放下去的方块保持默认原型态(空包)。
+				if (context.getItemInHand().isEmpty()) {
+					// ⚠️ 落点不能只按 relative(face) 猜:
+					// 目标是可替换方块(草/雪/花/水)时,原版把方块放在 clickedPos 本身
+					// (BlockPlaceContext.getClickedPos(): replaceClicked ? clickedPos : relativePos)。
+					// 只查 relative(face) 会查错位置 ⇒ setBackpack 不执行 ⇒ 84 格内容全丢。
+					final BlockPos primary = context.getClickedPos();
+					final BlockPos secondary = primary.relative(context.getClickedFace());
+					final MonsterBackpackBlockEntity placed =
+						findPlacedBackpack(context.getLevel(), primary, secondary);
+					if (placed != null) {
+						placed.setBackpack(source);
+					}
 				}
 			}
 
@@ -140,8 +153,30 @@ public class MonsterBackpackItem extends BlockItem {
 			return InteractionResult.FAIL;
 		}
 
-		openBackpack(context.getLevel(), player);
+		openBackpack(context.getLevel(), player, context.getHand());
 		return InteractionResult.SUCCESS;
+	}
+
+	/**
+	 * 放置之后,在【两个候选位置】里找出刚生成的那个背包方块实体。
+	 *
+	 * <p>为什么要两个:原版 {@code BlockPlaceContext.getClickedPos()} 是
+	 * {@code replaceClicked ? clickedPos : relativePos} —— 点在草/雪/花/水这类
+	 * <b>可替换方块</b>上时,方块落在 {@code clickedPos} 本身;点在石头之类上面时,
+	 * 落在 {@code clickedPos.relative(face)}。只查后者会让"对着草皮放置"丢内容。
+	 */
+	private static MonsterBackpackBlockEntity findPlacedBackpack(
+		final Level level,
+		final BlockPos primary,
+		final BlockPos secondary
+	) {
+		if (level.getBlockEntity(secondary) instanceof MonsterBackpackBlockEntity backpack) {
+			return backpack;
+		}
+		if (level.getBlockEntity(primary) instanceof MonsterBackpackBlockEntity backpack) {
+			return backpack;
+		}
+		return null;
 	}
 
 	/**
@@ -150,12 +185,21 @@ public class MonsterBackpackItem extends BlockItem {
 	 * <p>⚠️ 传的是<b>具体槽位索引</b>,不是"主手"这个抽象位置 ——
 	 * 因为玩家可以在界面开着的时候按数字键切槽,那样"主手"就指向别的东西了。
 	 * 记成具体格子之后,界面始终读同一格,并且那一格会被锁住。
+	 *
+	 * <p>⚠️⚠️ <b>必须按"实际用的那只手"解析</b>。一律用 {@code getSelectedSlot()} 会错:
+	 * 副手拿背包、主手空时,右键走到这里,而它指的是<b>主手那一格</b> ——
+	 * 于是打开的是别的格子(严重时把主手那件东西当成背包去写组件)。
 	 */
-	private void openBackpack(final Level level, final Player player) {
-		if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
-			serverPlayer.openMenu(new BackpackMenuProvider(
-				BackpackOpenData.ofSource(serverPlayer.getInventory().getSelectedSlot())));
+	private void openBackpack(final Level level, final Player player, final InteractionHand hand) {
+		if (level.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
+			return;
 		}
+
+		final int source = hand == InteractionHand.OFF_HAND
+			? BackpackOpenData.SOURCE_OFF_HAND
+			: serverPlayer.getInventory().getSelectedSlot();
+
+		serverPlayer.openMenu(new BackpackMenuProvider(BackpackOpenData.ofSource(source)));
 	}
 
 	/** 供方块注册引用,免得两处写死。 */

@@ -65,8 +65,24 @@ public class StomachContainer implements Container {
 	}
 
 	private void flush() {
-		this.backpack().set(ModComponents.STOMACH,
-			ItemContainerContents.fromItems(this.items));
+		final ItemStack owner = this.backpack();
+		// ⚠️ 背包没了就绝不写(否则写进全局空栈,砂囊里的东西静默消失)
+		if (owner.isEmpty()) {
+			this.cachedStack = null;
+			return;
+		}
+		owner.set(ModComponents.STOMACH, ItemContainerContents.fromItems(this.items));
+	}
+
+	/**
+	 * 🆕 <b>强制下次访问时重读组件</b> —— 与 {@link BackpackContainer#invalidate()} 同理。
+	 *
+	 * <p>⚠️ 这个类以前<b>没有</b>它,于是"砂囊在后台烧完、产物进背包"这条路径
+	 * 改的是同一个 {@code ItemStack} 对象:对象身份没变 ⇒ 容器永远不重读 ⇒
+	 * 客户端还显示旧输入、服务端却能再放一份 —— 表现为<b>烧一个复制一个</b>。
+	 */
+	public void invalidate() {
+		this.cachedStack = null;
 	}
 
 	// ------------------------------------------------------------------ Container
@@ -113,11 +129,14 @@ public class StomachContainer implements Container {
 	@Override
 	public void setItem(final int slot, final ItemStack stack) {
 		this.syncFromStack();
+		final ItemStack owner = this.backpack();
 		this.items.set(0, stack);
 		this.setChanged();
 
 		// 内容变了 → 计时重来
-		this.backpack().set(ModComponents.STOMACH_START, -1);
+		if (!owner.isEmpty()) {
+			owner.set(ModComponents.STOMACH_START, -1);
+		}
 	}
 
 	@Override
@@ -132,8 +151,11 @@ public class StomachContainer implements Container {
 
 	@Override
 	public void clearContent() {
+		final ItemStack owner = this.backpack();
 		this.items.set(0, ItemStack.EMPTY);
 		this.setChanged();
-		this.backpack().set(ModComponents.STOMACH_START, -1);
+		if (!owner.isEmpty()) {
+			owner.set(ModComponents.STOMACH_START, -1);
+		}
 	}
 }

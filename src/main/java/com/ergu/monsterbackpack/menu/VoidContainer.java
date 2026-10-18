@@ -74,7 +74,13 @@ public class VoidContainer implements Container {
 	}
 
 	private void flush() {
-		this.backpack().set(ModComponents.VOID_FILTER,
+		final ItemStack owner = this.backpack();
+		// ⚠️ 背包没了就绝不写(否则白名单写进全局空栈,污染所有空槽位)
+		if (owner.isEmpty()) {
+			this.cachedStack = null;
+			return;
+		}
+		owner.set(ModComponents.VOID_FILTER,
 			ItemContainerContents.fromItems(this.items));
 	}
 

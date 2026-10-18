@@ -61,7 +61,18 @@ public class CharmContainer implements Container {
 	}
 
 	private void flush() {
-		this.backpack().set(ModComponents.CHARMS, ItemContainerContents.fromItems(this.items));
+		final ItemStack owner = this.backpack();
+		// ⚠️ 背包没了就绝不写(否则写进全局空栈)
+		if (owner.isEmpty()) {
+			this.cachedStack = null;
+			return;
+		}
+		owner.set(ModComponents.CHARMS, ItemContainerContents.fromItems(this.items));
+	}
+
+	/** 🆕 强制下次访问时重读组件(与 {@link BackpackContainer#invalidate()} 同理)。 */
+	public void invalidate() {
+		this.cachedStack = null;
 	}
 
 	// ------------------------------------------------------------------ Container
@@ -111,7 +122,12 @@ public class CharmContainer implements Container {
 		this.flush();
 		// 🆕 挂饰变了 → 重算属性加成(幸运符这类)。
 		// ⚠️ 只有这里(事件驱动),绝不在每 tick 的地方调 —— 见工作区约定坑 20。
-		com.ergu.monsterbackpack.charm.CharmEffects.recalculate(this.backpack());
+		// ⚠️ 背包没了就别算:重算会往物品上写 ATTRIBUTE_MODIFIERS,
+		// 写进全局空栈同样是污染。
+		final ItemStack owner = this.backpack();
+		if (!owner.isEmpty()) {
+			com.ergu.monsterbackpack.charm.CharmEffects.recalculate(owner);
+		}
 	}
 
 	@Override

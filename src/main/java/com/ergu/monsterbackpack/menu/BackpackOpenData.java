@@ -30,6 +30,15 @@ public record BackpackOpenData(int source, BlockPos pos) {
 	/** 主手。 */
 	public static final int SOURCE_MAIN_HAND = -2;
 
+	/**
+	 * 副手。
+	 *
+	 * <p>⚠️ 它和 {@link #SOURCE_MAIN_HAND} 一样是<b>抽象位置</b>,不是物品栏索引 ——
+	 * 副手在 {@code Inventory} 里确实有个固定索引,但界面上不显示那一格,
+	 * 也就没有"锁住它"的必要(见 {@code BackpackMenu.computeLockedIndex})。
+	 */
+	public static final int SOURCE_OFF_HAND = -4;
+
 	/** 世界里的一个背包方块({@code pos} 有效)。 */
 	public static final int SOURCE_BLOCK = -3;
 

@@ -128,7 +128,14 @@ public class BackpackContainer implements Container {
 	 * (这里刻意不去判断"是不是客户端" —— 那需要拿到 {@code Level},会把这个类绑死在游戏环境上。)
 	 */
 	private void flush() {
-		this.backpack().set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.items));
+		final ItemStack owner = this.backpack();
+		// ⚠️⚠️ 背包没了就【绝不写】—— 否则组件会写到 ItemStack.EMPTY 这个全局单例上,
+		// 污染所有空槽位(那 84 格东西等于人间蒸发)。
+		if (owner.isEmpty()) {
+			this.cachedStack = null;
+			return;
+		}
+		owner.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.items));
 	}
 
 	// ---------------------------------------------------------------- 成长状态

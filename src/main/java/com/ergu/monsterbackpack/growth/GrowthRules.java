@@ -5,9 +5,11 @@ package com.ergu.monsterbackpack.growth;
  *
  * <h2>7 行 = 4 个阶段(见 DESIGN.md §六)</h2>
  * <pre>
- *   偶数行(0/2/4/6)= 阶段首行:前 3 格是「出生 / 突破位」,后 6 格是【快速生长】(甜头)
- *   奇数行(1/3/5)  = 9 格【慢速生长】
+ *   偶数行(0/2/4/6)= 阶段首行:前 3 格是「出生 / 突破位」,后 9 格是【快速生长】(甜头)
+ *   奇数行(1/3/5)  = 12 格【慢速生长】
  * </pre>
+ * ⚠️ 上面的格数按 <b>12 列</b>写(3 + 9 = 12);列数一变,数字跟着变,
+ * 但"哪一格属于哪一类"仍只由行/列推导,不需要存。
  * 所以"这一格属于哪一类"是<b>推导出来的,不需要存</b>。
  *
  * <h2>⚠️ V0.1 的简化</h2>
@@ -44,7 +46,7 @@ public final class GrowthRules {
 			if (col < 3) {
 				return 0;
 			}
-			// 后 6 格 = 快速生长
+			// 后 9 格 = 快速生长(12 列 - 前 3 格)
 			return switch (row) {
 				case 0 -> 5 * SECOND;
 				case 2 -> 10 * SECOND;
@@ -52,7 +54,7 @@ public final class GrowthRules {
 			};
 		}
 
-		// 奇数行:9 格慢速生长(时长待实机调,见 DESIGN.md §十三 的临时决定)
+		// 奇数行:12 格整行慢速生长(20/30/40 s,待实机调,见 DESIGN.md §十三)
 		return switch (row) {
 			case 1 -> 20 * SECOND;
 			case 3 -> 30 * SECOND;
